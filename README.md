@@ -2,9 +2,16 @@
 
 Kube Tenant Console is a small internal tool for preparing namespace-based tenants in Kubernetes.
 
-It is not trying to be Rancher, Argo CD, or a Kubernetes operator. The idea is simpler: keep a small local state, generate normal Kubernetes objects, show the YAML, and let an admin apply or remove those objects from one UI.
+It keeps a small local state, generates standard Kubernetes objects, shows YAML previews, and lets an admin apply or remove managed resources from one UI.
 
 No CRDs. No controller loop. Just standard Kubernetes resources.
+
+## Background
+
+This project is a personal clean-room implementation inspired by recurring Kubernetes tenant onboarding work: creating namespaces, quotas, RBAC roles, service accounts, and kubeconfigs by hand.
+
+It does not contain proprietary code, internal configuration, or company-specific workflows.
+
 
 ## What It Creates
 

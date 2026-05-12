@@ -1,0 +1,34 @@
+# Local state
+data/
+*.state.json
+
+# Go build/test
+dist/
+bin/
+*.test
+coverage.out
+*.coverprofile
+
+# Go workspace/cache
+.gocache/
+go.work
+go.work.sum
+
+# Env/local config
+.env
+.env.*
+*.local
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Kubernetes local files
+kubeconfig
+*.kubeconfig
+
+# Logs
+*.log

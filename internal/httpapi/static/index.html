@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kube Tenant Console</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="mark">K</span>
+          <div>
+            <strong>Kube Tenant</strong>
+            <small>RBAC and quotas</small>
+          </div>
+        </div>
+        <nav>
+          <button class="tab active" data-tab="tenants">Tenants</button>
+          <button class="tab" data-tab="namespaces">Namespaces</button>
+          <button class="tab" data-tab="roles">Roles</button>
+          <button class="tab" data-tab="access">Access</button>
+          <button class="tab" data-tab="manifests">Previews</button>
+          <button class="tab" data-tab="cluster">Cluster</button>
+        </nav>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <h1>Tenant control plane</h1>
+            <p>Generate standard Kubernetes RBAC, quota, and kubeconfig resources without CRDs.</p>
+          </div>
+          <button id="refresh">Refresh</button>
+        </header>
+
+        <section id="tenants" class="panel visible">
+          <div class="grid two">
+            <form id="tenantForm" class="form">
+              <h2>Create tenant</h2>
+              <label>Tenant name<input name="name" placeholder="platform-a" required /></label>
+              <label>Namespace prefix<input name="namespacePrefix" placeholder="platform-a" /></label>
+              <button>Create tenant</button>
+            </form>
+            <div class="list">
+              <h2>Tenants</h2>
+              <div id="tenantList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="namespaces" class="panel">
+          <div class="grid two">
+            <form id="namespaceForm" class="form">
+              <h2>Create namespace</h2>
+              <label>Tenant<select id="namespaceTenant" name="tenantId" required></select></label>
+              <label>Namespace suffix
+                <div class="name-composer">
+                  <span id="namespacePrefixPreview" class="prefix-chip">select tenant</span>
+                  <input id="namespaceSuffix" name="namespaceSuffix" placeholder="dev" autocomplete="off" required />
+                </div>
+              </label>
+              <div class="hint">Full namespace: <strong id="namespaceFullNamePreview">select tenant</strong></div>
+              <div class="columns">
+                <label>CPU requests<input name="requestsCpu" value="4" /></label>
+                <label>Memory requests<input name="requestsMemory" value="8Gi" /></label>
+                <label>CPU limits<input name="limitsCpu" value="8" /></label>
+                <label>Memory limits<input name="limitsMemory" value="16Gi" /></label>
+                <label>Pods<input name="pods" value="30" /></label>
+                <label>PVCs<input name="pvcs" value="10" /></label>
+                <label>Storage<input name="storage" value="100Gi" /></label>
+              </div>
+              <button>Create namespace</button>
+            </form>
+            <div class="list">
+              <h2>Namespaces</h2>
+              <div id="namespaceList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="roles" class="panel">
+          <div class="grid two">
+            <form id="roleForm" class="form">
+              <h2>Create role</h2>
+              <label>Tenant<select name="tenantId" required></select></label>
+              <label>Name<input name="name" placeholder="deployer" required /></label>
+              <label>Scope
+                <select name="scope">
+                  <option value="namespace">Namespace</option>
+                  <option value="cluster">Cluster</option>
+                </select>
+              </label>
+              <label>Preset<select id="rolePreset" name="preset"></select></label>
+              <div id="rolePresetInfo" class="hint"></div>
+              <div id="generatedRuleList" class="draft-list"></div>
+              <div class="rule-builder" hidden>
+                <h3>Advanced rules</h3>
+                <label>API group<select id="rbacGroupSelect"></select></label>
+                <div>
+                  <span class="field-title">Resources</span>
+                  <div id="rbacResourceGrid" class="check-grid"></div>
+                </div>
+                <div>
+                  <span class="field-title">Verbs</span>
+                  <div id="rbacVerbGrid" class="check-grid compact"></div>
+                </div>
+                <button type="button" class="ghost" id="addRuleButton">Add rule</button>
+                <div id="ruleDraftList" class="draft-list"></div>
+              </div>
+              <button>Create role</button>
+            </form>
+            <div class="list">
+              <h2>Roles</h2>
+              <div id="roleList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="access" class="panel">
+          <div class="grid two">
+            <form id="assignmentForm" class="form">
+              <h2>Bind subject</h2>
+              <label>Namespace<select id="assignmentNamespace" name="namespaceId" required></select></label>
+              <label>Role<select id="assignmentRole" name="roleId" required></select></label>
+              <label>Subject kind
+                <select id="subjectKind" name="subjectKind">
+                  <option>User</option>
+                  <option>Group</option>
+                  <option>ServiceAccount</option>
+                </select>
+              </label>
+              <div id="subjectKindHint" class="hint"></div>
+              <label id="subjectNameInputLabel">Subject name
+                <input id="subjectNameInput" name="subjectName" placeholder="alice@example.com" autocomplete="off" autocapitalize="none" spellcheck="false" required />
+              </label>
+              <label id="subjectNameSelectLabel" hidden>Service account
+                <select id="subjectNameSelect" name="subjectName" disabled required></select>
+              </label>
+              <button>Create binding</button>
+            </form>
+            <form id="serviceAccountForm" class="form">
+              <h2>Create service account</h2>
+              <div class="hint">ServiceAccount lives inside one namespace. Bind it to a Role before issuing kubeconfig for it.</div>
+              <label>Namespace<select id="serviceAccountNamespace" name="namespaceId" required></select></label>
+              <label>Name<input name="name" placeholder="ci-deploy" required /></label>
+              <button>Create service account</button>
+              <section class="inline-section">
+                <h3>Existing service accounts</h3>
+                <div id="serviceAccountList"></div>
+              </section>
+            </form>
+            <form id="kubeconfigForm" class="form">
+              <h2>Issue kubeconfig</h2>
+              <div class="hint">Pick an existing ServiceAccount from this namespace. Preview uses a placeholder token; issue token returns a real short-lived kubeconfig once.</div>
+              <label>Namespace<select id="kubeconfigNamespace" name="namespaceId" required></select></label>
+              <label>Service account<select id="kubeconfigServiceAccount" required></select></label>
+              <label>TTL hours<input name="ttlHours" type="number" min="1" value="24" /></label>
+              <button>Create kubeconfig request</button>
+              <section class="inline-section">
+                <h3>Kubeconfig requests</h3>
+                <div id="kubeconfigList"></div>
+              </section>
+            </form>
+            <div class="list">
+              <h2>Bindings</h2>
+              <div id="assignmentList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="manifests" class="panel">
+          <div class="grid two">
+            <div class="list">
+              <h2>YAML previews</h2>
+              <div id="manifestList"></div>
+            </div>
+            <pre id="manifestViewer">Select a preview</pre>
+          </div>
+        </section>
+
+        <section id="cluster" class="panel">
+          <div class="grid two live-grid">
+            <div class="list">
+              <div class="section-heading">
+                <h2>Live cluster</h2>
+                <button id="clusterRefresh" class="ghost" type="button">Refresh</button>
+              </div>
+              <div id="clusterSummary" class="summary-grid"></div>
+              <div id="clusterObjectList"></div>
+            </div>
+            <pre id="clusterViewer">Live Kubernetes objects created by lrbac labels will show here.</pre>
+          </div>
+        </section>
+      </section>
+    </main>
+    <div id="toast"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

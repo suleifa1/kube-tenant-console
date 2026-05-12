@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kube-tenant-console.fullname" . }}-env
+  labels:
+    {{- include "kube-tenant-console.labels" . | nindent 4 }}
+data:
+  ADDR: {{ .Values.env.addr | quote }}
+  DATA_PATH: {{ .Values.env.dataPath | quote }}
+  ALLOW_CLUSTER_SCOPE: {{ .Values.env.allowClusterScope | quote }}

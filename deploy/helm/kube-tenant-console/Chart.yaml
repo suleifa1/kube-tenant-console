@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kube-tenant-console
+description: Lightweight Kubernetes tenant RBAC and quota console without CRDs.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
